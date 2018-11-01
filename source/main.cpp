@@ -88,15 +88,16 @@ void generateRooms(room *rooms, int size) {
 }
 
 void overlap(room *rooms, int current) {
-	float r = .1;
-	float t = (float)(rand() % 10000) / 1591.5494309;
-
 	/*
 	*	For every room
 	*	Check if it intersects any other room
 	*		If yes move it .1 units in the pre defined direction(anywhere between 0 and 360 degrees) and check again
 	*		If no exit
 	*/
+
+	float r = .1;
+	float t = (float)(rand() % 10000) / 1591.5494309;
+
 	for (int i = 0; i < ROOMNUM; i++) {
 		if (rooms[current].getBox().getGlobalBounds().intersects(rooms[i].getBox().getGlobalBounds()) && current != i ) {
 			i = -1;
@@ -133,6 +134,7 @@ void findPath(room *rooms, int size) {
 	for(int i = 0; i < big; i++){
 		cout << i+1 << ": " << x[i] << ", " << y[i] << endl;
 	}
+	
 }
 
 int main() {
@@ -168,9 +170,7 @@ int main() {
 			findPath(rooms, ROOMNUM);
 			pathFound = true;
 		}
-
 		sf::sleep(sf::milliseconds(2000));
-
 	}
 	return 0;
 }
