@@ -1,6 +1,6 @@
 #include <iostream>
 #include <SFML/Graphics.hpp>
-#include "room.h"
+#include "../headers/room.h"
 #include <stdlib.h>     // srand, rand 
 #include <time.h>		//time function
 #include <math.h>
