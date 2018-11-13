@@ -7,7 +7,7 @@
 #include <SFML/OpenGL.hpp>
 
 #define ROOMNUM 150
-#define RADIUS 40
+#define RADIUS 300
 #define FLOORS 2
 
 using namespace std;
@@ -107,34 +107,29 @@ void overlap(room *rooms, int current) {
 	}
 }
 
-void findPath(room *rooms, int size) {
-	/*
-	path from center to x main room should tend to go from big to small and small to big rooms
-	i.e 
-	1)find rooms immediatly adjacent to main room
-	2)find the ratio between the size of the current room and the size of each adjeacent room
-	3)tend towards the most favorable ratio while always choosing yellow rooms if one is available
-	*favorable ratio - if area is above a threshhold, search for an optimal low ratio and vice versa
-	*/
-	int big = 0;
-	for(int i = 0; i < ROOMNUM; i++){
-		if(rooms[i].getColor() == 3 || rooms[i].getColor() == 4)
-			big++;
-	}
+void getRoomCenter(room *rooms, int big, int xy[][2]) {
 
-	int x[big], y[big], counter = 0;
+	//	For every big room, grab the coordinates of its center
+	int /*xy[big][2],*/ counter = 0;
 	for(int i = 0; counter < big; i++){
 		if(rooms[i].getColor() == 3 || rooms[i].getColor() == 4){
-			x[counter] = rooms[i].getCenterX();
-			y[counter] = rooms[i].getCenterY();
+			xy[counter][0] = rooms[i].getCenterX();
+			xy[counter][1] = rooms[i].getCenterY();
 			counter++;
 		}
 	}
+}
 
-	for(int i = 0; i < big; i++){
-		cout << i+1 << ": " << x[i] << ", " << y[i] << endl;
+//	Counts the number of big rooms in the room array
+int countBig(room *rooms){
+	int big = 0;
+
+	for(int i = 0; i < ROOMNUM; i++){
+			if(rooms[i].getColor() == 3 || rooms[i].getColor() == 4)
+				big++;
 	}
-	
+
+	return big;
 }
 
 int main() {
@@ -147,12 +142,18 @@ int main() {
 	//	Initialize Rooms array
 	room rooms[ROOMNUM];
 
+	//	Center array
+	int xy;
+
 	//	Randomly generate each rooms dimensions
 	generateRooms(rooms, ROOMNUM);
 
+	// Create array that will hold coordinates of the center of each big room
+	int centers[countBig(rooms)][2];
+
 	while (window.isOpen()) {
 
-		//	Move rooms to new locations and re draw the scene in real time
+		//	Move rooms to new locations and re draw the scene
 		if(!generated){
 			for (int i = 0; i < ROOMNUM; i++) {
 				overlap(rooms, i);
@@ -167,10 +168,11 @@ int main() {
 
 		//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
 		if(!pathFound){
-			findPath(rooms, ROOMNUM);
+			getRoomCenter(rooms, countBig(rooms), centers);
+
 			pathFound = true;
 		}
-		sf::sleep(sf::milliseconds(2000));
+		//sf::sleep(sf::milliseconds(1000));
 	}
 	return 0;
 }
