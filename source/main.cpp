@@ -9,6 +9,7 @@
 #define ROOMNUM 150
 #define RADIUS 300
 #define FLOORS 2
+#define QUICK 1
 
 using namespace std;
 
@@ -120,7 +121,7 @@ void getRoomCenter(room *rooms, int big, int xy[][2]) {
 	}
 }
 
-//	Counts the number of big rooms in the room array
+//	Counts the number of big rooms in an array of rooms
 int countBig(room *rooms){
 	int big = 0;
 
@@ -142,9 +143,6 @@ int main() {
 	//	Initialize Rooms array
 	room rooms[ROOMNUM];
 
-	//	Center array
-	int xy;
-
 	//	Randomly generate each rooms dimensions
 	generateRooms(rooms, ROOMNUM);
 
@@ -153,26 +151,65 @@ int main() {
 
 	while (window.isOpen()) {
 
-		//	Move rooms to new locations and re draw the scene
-		if(!generated){
-			for (int i = 0; i < ROOMNUM; i++) {
-				overlap(rooms, i);
-				window.clear();
-				for (int j = 0; j <= i; j++) { 
-					window.draw(rooms[j].getBox()); 
-				}
-				window.display();
+		sf::Event event;
+		while (window.pollEvent(event)){
+
+			switch (event.type){
+				case sf::Event::Closed:
+					window.close();
+					break;
+
+				case sf::Event::KeyPressed:
+					if(event.key.code == sf::Keyboard::Q){
+						cout << "Quiting..." << endl;
+						window.close();
+					} else if(event.key.code == sf::Keyboard::G && !generated){
+						generated = true;
+						cout << "Generating map..." << endl;
+						window.clear();
+						for (int i = 0; i < ROOMNUM; i++){
+							overlap(rooms, i);
+							if(!QUICK){
+								window.clear();
+								for (int j = 0; j <= i; j++) { 
+									window.draw(rooms[j].getBox()); 
+								}
+								window.display();
+							}else if(QUICK){
+								for (int j = 0; j <= i; j++) { 
+									window.draw(rooms[j].getBox()); 
+								}
+							}
+						}
+						window.display();
+					} else if(event.key.code == sf::Keyboard::R && generated){
+						cout << "Re generating rooms" << endl;
+					} else{
+						cout << "Key press not recognized" << endl;
+					}
+
+					break;
+
+				case sf::Event::Resized:
+					cout << "new width: " << event.size.width << endl;
+					cout << "new height: " << event.size.height << endl;
+					break;
+
+				default:
+					break;
 			}
-			generated = true;
-		}
 
-		//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
-		if(!pathFound){
-			getRoomCenter(rooms, countBig(rooms), centers);
 
-			pathFound = true;
+			
+
+			//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
+			if(!pathFound){
+				getRoomCenter(rooms, countBig(rooms), centers);
+
+				pathFound = true;
+			}
+			//sf::sleep(sf::milliseconds(1000));
 		}
-		//sf::sleep(sf::milliseconds(1000));
 	}
 	return 0;
 }
