@@ -7,7 +7,10 @@
 using namespace std;
 
 class smallRoom : public room {
+    public:
 
+    private:
+    
 };
 
 #endif
