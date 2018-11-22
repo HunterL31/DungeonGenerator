@@ -9,7 +9,7 @@
 #define ROOMNUM 150
 #define RADIUS 300
 #define FLOORS 2
-#define QUICK 1
+#define QUICK 0
 
 using namespace std;
 
@@ -23,7 +23,7 @@ void logic() {
 
 int randRange(int low, int high) { return rand() % high + low; }
 
-void generateRooms(room *rooms, int size) {
+void generateRooms(room *rooms) {
 	srand(time(NULL));
 	int range;
 	/* 
@@ -34,7 +34,7 @@ void generateRooms(room *rooms, int size) {
 	*	10% chance of large room
 	*		width and height between 17 - 25
 	*/
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < ROOMNUM; i++) {
 		range = randRange(1, 100);
 
 		if (range >= 1 && range < 70) {
@@ -60,7 +60,7 @@ void generateRooms(room *rooms, int size) {
 	*	Large rooms with an area between 289 - 625 get colored yellow
 	*/
 	int small = 0, med = 0, large = 0;
-	for (int i = 0; i < size; i++) {
+	for (int i = 0; i < ROOMNUM; i++) {
 		if (rooms[i].getW()*rooms[i].getH() <= 49) { 
 			rooms[i].setColor(1); 
 			small++;
@@ -136,6 +136,7 @@ int countBig(room *rooms){
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 800), "Dungeon Generator");
 	window.setFramerateLimit(120);
+	window.display();
 
 	//	Event flags
 	bool generated = false, pathFound = false;
@@ -144,16 +145,14 @@ int main() {
 	room rooms[ROOMNUM];
 
 	//	Randomly generate each rooms dimensions
-	generateRooms(rooms, ROOMNUM);
+	generateRooms(rooms);
 
 	// Create array that will hold coordinates of the center of each big room
 	int centers[countBig(rooms)][2];
 
 	while (window.isOpen()) {
-
 		sf::Event event;
 		while (window.pollEvent(event)){
-
 			switch (event.type){
 				case sf::Event::Closed:
 					window.close();
@@ -182,9 +181,32 @@ int main() {
 							}
 						}
 						window.display();
-					} else if(event.key.code == sf::Keyboard::R && generated){
+					} else if(event.key.code == sf::Keyboard::G && generated){
 						cout << "Re generating rooms" << endl;
-					} else{
+						pathFound = false;
+						generateRooms(rooms);
+						window.clear();
+						for (int i = 0; i < ROOMNUM; i++){
+							overlap(rooms, i);
+							if(!QUICK){
+								window.clear();
+								for (int j = 0; j <= i; j++) { 
+									window.draw(rooms[j].getBox()); 
+								}
+								window.display();
+							}else if(QUICK){
+								for (int j = 0; j <= i; j++) { 
+									window.draw(rooms[j].getBox()); 
+								}
+							}
+						}
+						window.display();
+					} else if(event.key.code == sf::Keyboard::P && generated && !pathFound){
+						cout << "Finding Path" << endl;
+						//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
+						getRoomCenter(rooms, countBig(rooms), centers);
+						pathFound = true;
+					}else{
 						cout << "Key press not recognized" << endl;
 					}
 
@@ -198,17 +220,6 @@ int main() {
 				default:
 					break;
 			}
-
-
-			
-
-			//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
-			if(!pathFound){
-				getRoomCenter(rooms, countBig(rooms), centers);
-
-				pathFound = true;
-			}
-			//sf::sleep(sf::milliseconds(1000));
 		}
 	}
 	return 0;
