@@ -22,7 +22,7 @@ class room {
 
 	private:
 		void setCenter();
-		int width, height;
+		int width, height, depth;
 		int originX, originY;
 		int centerX, centerY;
 		int color;
