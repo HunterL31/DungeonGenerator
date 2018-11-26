@@ -7,20 +7,14 @@
 #include <SFML/OpenGL.hpp>
 #include <random>
 
-#define ROOMNUM 150
-#define RADIUS 300
-#define FLOORS 2
-#define QUICK 0
+#define ROOMNUM 	150
+#define RADIUS 		25
+#define FLOORS 		2
+#define QUICK 		0
+#define DOF			4.5
+#define DUNGSCALE	3
 
 using namespace std;
-
-void input() {
-
-}
-
-void logic() {
-
-}
 
 int randRange(int low, int high) { return rand() % high + low; }
 
@@ -28,7 +22,7 @@ void generateRooms(room *rooms) {
 	//	Random width and height according to a chi-squared random distribution
 	
 	default_random_engine generator;
-	chi_squared_distribution<double> distribution(4.5);	
+	chi_squared_distribution<double> distribution(DOF);	
 
 	for (int i = 0; i < ROOMNUM; i++) {
 		double number = distribution(generator);
@@ -36,18 +30,18 @@ void generateRooms(room *rooms) {
 
 		if(number > 0 && number2 > 0 && number != number2){
 			//	Set the dimensions of the room
-			rooms[i].setDim(number * 3.0, number2 * 3.0);
+			rooms[i].setDim(number * DUNGSCALE, number2 * DUNGSCALE);
 
 			//	Set the origin of the room within the pre-defined radius
 			float t = (float)(randRange(0, 10000)) / 1591.5494309;
-			float a = ((float)(randRange(0, 10000)) / (10000.0/400.0))*(RADIUS/400);
+			float a = ((float)(randRange(0, 10000)) / 10000.0)*(RADIUS);
 			rooms[i].setOrigin(a*sin(t)+400, a*cos(t)+400);
+			
 		}else{
 			//	Edge case for when one dimension is 0 or below
 			i--;
 		}
 	}
-
 	/*
 	*	Small rooms with an area below 200 get colored blue
 	*	Medium rooms with an area between 200 - 500 get colored green 
@@ -96,7 +90,7 @@ void overlap(room *rooms, int current) {
 	for (int i = 0; i < ROOMNUM; i++) {
 		if (rooms[current].getBox().getGlobalBounds().intersects(rooms[i].getBox().getGlobalBounds()) && current != i ) {
 			i = -1;
-			r += .1;
+			r += 1.5;
 			rooms[current].setOrigin(r*sin(t) + 400, r*cos(t) + 400);
 		}
 	}
@@ -127,16 +121,19 @@ int countBig(room *rooms){
 int main() {
 	sf::RenderWindow window(sf::VideoMode(800, 800), "Dungeon Generator");
 	window.setFramerateLimit(120);
-	window.display();
 
 	//	Event flags
-	bool generated = false, pathFound = false;
+	bool generated = false, delaunay = false, minimal = false;
 
 	//	Initialize Rooms array
 	room rooms[ROOMNUM];
 
-	// Create array that will hold coordinates of the center of each big room
-	int centers[countBig(rooms)][2];
+	//	Generate and draw initial cluster of rooms
+	generateRooms(rooms);
+	window.clear();
+	for(int i = 0; i < ROOMNUM; i++)
+		window.draw(rooms[i].getBox());
+	window.display();
 
 	while (window.isOpen()) {
 		sf::Event event;
@@ -154,8 +151,7 @@ int main() {
 					} else if(event.key.code == sf::Keyboard::G && !generated){
 						generated = true;
 						cout << "Generating map..." << endl;
-						generateRooms(rooms);
-						window.clear();
+
 						for (int i = 0; i < ROOMNUM; i++){
 							overlap(rooms, i);
 							if(!QUICK){
@@ -171,9 +167,11 @@ int main() {
 							}
 						}
 						window.display();
+						cout << "	map generated" << endl; 
 					} else if(event.key.code == sf::Keyboard::G && generated){
-						cout << "Re generating rooms..." << endl;
-						pathFound = false;
+						cout << "Regenerating map..." << endl;
+						delaunay = false;//	Should change to clear the delaunay triangulation if its been made
+						minimal = false;//	Should change to clear the minimal spanning tree if its made
 						generateRooms(rooms);
 						window.clear();
 						for (int i = 0; i < ROOMNUM; i++){
@@ -191,11 +189,21 @@ int main() {
 							}
 						}
 						window.display();
-					} else if(event.key.code == sf::Keyboard::P && generated && !pathFound){
-						cout << "Finding Path" << endl;
+						cout << "	map generated" << endl;
+					} else if(event.key.code == sf::Keyboard::D && generated && !delaunay){
+						cout << "Forming Delaunay triangulation..." << endl;
+
+						// Create array that will hold coordinates of the center of each big room
+						int centers[countBig(rooms)][2];
+
 						//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
 						getRoomCenter(rooms, countBig(rooms), centers);
-						pathFound = true;
+						cout << "	Using " << countBig(rooms) << " main rooms" << endl;
+						delaunay = true;
+					
+					}else if(event.key.code == sf::Keyboard::M && generated && delaunay && !minimal){
+						cout << "Forming minimal spanning tree" << endl;
+						minimal = true;
 					}else{
 						cout << "Key press not recognized" << endl;
 					}
