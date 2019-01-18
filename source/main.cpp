@@ -7,12 +7,18 @@
 #include <SFML/OpenGL.hpp>
 #include <random>
 
-#define ROOMNUM 	150
+//	Delaunay library includes 
+#include "../delaunay/vector2.h"
+#include "../delaunay/triangle.h"
+#include "../delaunay/delaunay.h"
+
+#define ROOMNUM 	300
 #define RADIUS 		25
 #define FLOORS 		2
 #define QUICK 		0
 #define DOF			4.5
 #define DUNGSCALE	3
+#define DEBUG		0
 
 using namespace std;
 
@@ -195,10 +201,56 @@ int main() {
 
 						// Create array that will hold coordinates of the center of each big room
 						int centers[countBig(rooms)][2];
-
-						//	Run rooms through algorithm to calculate shortest path and trim the excess rooms
+						// Populate array with center coordinates for each room
 						getRoomCenter(rooms, countBig(rooms), centers);
 						cout << "	Using " << countBig(rooms) << " main rooms" << endl;
+
+						// Transfer points to a vector of vector2s
+						std::vector<Vector2<float> > points;
+						for(int i = 0; i < countBig(rooms); ++i) {
+							points.push_back(Vector2<float>(centers[i][0], centers[i][1]));
+						}
+
+						// Create Delaunay and triangle object and optionally print out debug message
+						Delaunay<float> triangulation;
+						const std::vector<Triangle<float> > triangles = triangulation.triangulate(points);
+						std::cout << "	" << triangles.size() << " triangles generated\n" << std::endl;
+						const std::vector<Edge<float> > edges = triangulation.getEdges();
+						if(DEBUG){
+							std::cout << "Points: " << points.size() << std::endl;
+							for(const auto &p : points)
+								std::cout << p << std::endl;
+							std::cout << "Triangles: " << triangles.size() << std::endl;
+							for(const auto &t : triangles)
+								std::cout << t << std::endl;
+							std::cout << "Edges: " << edges.size() << std::endl;
+							for(const auto &e : edges)
+								std::cout << e << std::endl;
+						}
+						
+						//	Vector to hold edges
+						std::vector<sf::RectangleShape*> edgeShapes;
+
+						for(const auto p : points){
+							sf::RectangleShape *c1 = new sf::RectangleShape(sf::Vector2f(4, 4));
+							c1->setPosition(p.x, p.y);
+							c1->setFillColor(sf::Color::Red);
+							edgeShapes.push_back(c1);
+						}
+
+						std::vector<std::array<sf::Vertex, 2> > lines;
+						for(const auto &e : edges) {
+							lines.push_back({{
+								sf::Vertex(sf::Vector2f(e.p1.x + 2, e.p1.y + 2)),
+								sf::Vertex(sf::Vector2f(e.p2.x + 2, e.p2.y + 2))
+							}});
+						}
+						
+						for(const auto &l : lines) {
+							window.draw(l.data(), 2, sf::Lines);
+						}
+						
+						window.display();
 						delaunay = true;
 					
 					}else if(event.key.code == sf::Keyboard::M && generated && delaunay && !minimal){

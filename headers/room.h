@@ -42,8 +42,8 @@ void room::setOrigin(int x, int y) {
 	originX = x;
 	originY = y;
 	box.setPosition(x, y);
-	box.setOutlineThickness(1);
-	box.setOutlineColor(sf::Color(sf::Color::White));
+	//box.setOutlineThickness(1);
+	//box.setOutlineColor(sf::Color(sf::Color::White));
 	setCenter();
 }
 
@@ -59,7 +59,7 @@ void room::setColor(int x)  {
 	color = x;
 	if (color == 1) { box.setFillColor(sf::Color::Blue); }
 	else if (color == 2) { box.setFillColor(sf::Color::Green); }
-	else if (color == 3) { box.setFillColor(sf::Color::Yellow); }
+	else if (color == 3) { box.setFillColor(sf::Color::Red); }
 	else {box.setFillColor(sf::Color::Red);}
 }
 
