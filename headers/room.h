@@ -42,8 +42,6 @@ void room::setOrigin(int x, int y) {
 	originX = x;
 	originY = y;
 	box.setPosition(x, y);
-	//box.setOutlineThickness(1);
-	//box.setOutlineColor(sf::Color(sf::Color::White));
 	setCenter();
 }
 
