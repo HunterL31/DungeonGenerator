@@ -102,18 +102,6 @@ void overlap(room *rooms, int current) {
 	}
 }
 
-void getRoomCenter(room *rooms, int big, int xy[][2]) {
-	//	For every big room, grab the coordinates of its center
-	int counter = 0;
-	for(int i = 0; counter < big; i++){
-		if(rooms[i].getColor() == 3 || rooms[i].getColor() == 4){
-			xy[counter][0] = rooms[i].getCenterX();
-			xy[counter][1] = rooms[i].getCenterY();
-			counter++;
-		}
-	}
-}
-
 //	Counts the number of big rooms in an array of rooms
 int countBig(room *rooms){
 	int big = 0;
@@ -122,6 +110,19 @@ int countBig(room *rooms){
 				big++;
 	}
 	return big;
+}
+
+void getRoomCenter(room *rooms, vector<Vector2<float> > &points) {
+	int roomCount = countBig(rooms);
+
+	//	For every big room, grab the coordinates of its center
+	int counter = 0;
+	for(int i = 0; counter < roomCount; i++){
+		if(rooms[i].getColor() == 3 || rooms[i].getColor() == 4){
+			points.push_back(Vector2<float>(rooms[i].getCenterX(), rooms[i].getCenterY()));
+			counter++;
+		}
+	}
 }
 
 int main() {
@@ -141,19 +142,28 @@ int main() {
 		window.draw(rooms[i].getBox());
 	window.display();
 
+	// Window loop that runs while the window is open
 	while (window.isOpen()) {
 		sf::Event event;
+
+		// Event loop that watches for key presses
 		while (window.pollEvent(event)){
 			switch (event.type){
-
+				
+				// Triggers when the window is closed
 				case sf::Event::Closed:
 					window.close();
 					break;
 
+				// Case for when a key is pressed
 				case sf::Event::KeyPressed:
+
+					// Q tells program to quit in an elegant way
 					if(event.key.code == sf::Keyboard::Q){
 						cout << "Quiting..." << endl;
 						window.close();
+
+					// G generates and distributes the rooms 
 					} else if(event.key.code == sf::Keyboard::G && !generated){
 						generated = true;
 						cout << "Generating map..." << endl;
@@ -174,10 +184,12 @@ int main() {
 						}
 						window.display();
 						cout << "	map generated" << endl; 
+
+					// If the rooms have already been distributed, G will remake them and redistribute them
 					} else if(event.key.code == sf::Keyboard::G && generated){
 						cout << "Regenerating map..." << endl;
-						delaunay = false;//	Should change to clear the delaunay triangulation if its been made
-						minimal = false;//	Should change to clear the minimal spanning tree if its made
+						delaunay = false;
+						minimal = false;
 						generateRooms(rooms);
 						window.clear();
 						for (int i = 0; i < ROOMNUM; i++){
@@ -196,41 +208,50 @@ int main() {
 						}
 						window.display();
 						cout << "	map generated" << endl;
+
+					// D will perform Delaunay triangulation on the rooms if they have been previously distributed
 					} else if(event.key.code == sf::Keyboard::D && generated && !delaunay){
 						cout << "Forming Delaunay triangulation..." << endl;
 
-						// Create array that will hold coordinates of the center of each big room
-						int centers[countBig(rooms)][2];
-						// Populate array with center coordinates for each room
-						getRoomCenter(rooms, countBig(rooms), centers);
+						// Vector to hold coordinates of each large rooms center
+						std::vector<Vector2<float> > points;
+
+						// Populate point vector with center coordinates for each room
+						getRoomCenter(rooms, points);
 						cout << "	Using " << countBig(rooms) << " main rooms" << endl;
 
-						// Transfer points to a vector of vector2s
-						std::vector<Vector2<float> > points;
-						for(int i = 0; i < countBig(rooms); ++i) {
-							points.push_back(Vector2<float>(centers[i][0], centers[i][1]));
-						}
-
-						// Create Delaunay and triangle object and optionally print out debug message
+						// Create Delaunay object, triangulate the points and optionally print out debug message
 						Delaunay<float> triangulation;
 						const std::vector<Triangle<float> > triangles = triangulation.triangulate(points);
-						std::cout << "	" << triangles.size() << " triangles generated\n" << std::endl;
+						
+						// Get the values for each edge in the triangulation and store them in a vector
 						const std::vector<Edge<float> > edges = triangulation.getEdges();
+
+						// If debugging is turned on, print values of all points, triangles and edges
 						if(DEBUG){
+							// Number of triangles
+							std::cout << "	" << triangles.size() << " triangles generated\n" << std::endl;
+
+							// Number of points
 							std::cout << "Points: " << points.size() << std::endl;
 							for(const auto &p : points)
 								std::cout << p << std::endl;
+
+							// Number of triangles
 							std::cout << "Triangles: " << triangles.size() << std::endl;
 							for(const auto &t : triangles)
 								std::cout << t << std::endl;
+
+							// Number of Edges
 							std::cout << "Edges: " << edges.size() << std::endl;
 							for(const auto &e : edges)
 								std::cout << e << std::endl;
 						}
 						
-						//	Vector to hold edges
+						//	Create vector to hold edge shapes so that SFML can display them 
 						std::vector<sf::RectangleShape*> edgeShapes;
 
+						// Loops through points and creates rectangle shapes for each edge
 						for(const auto p : points){
 							sf::RectangleShape *c1 = new sf::RectangleShape(sf::Vector2f(4, 4));
 							c1->setPosition(p.x, p.y);
@@ -238,6 +259,7 @@ int main() {
 							edgeShapes.push_back(c1);
 						}
 
+						// Add in the opposite corners to form rectangles
 						std::vector<std::array<sf::Vertex, 2> > lines;
 						for(const auto &e : edges) {
 							lines.push_back({{
@@ -246,25 +268,34 @@ int main() {
 							}});
 						}
 						
+						// Draw each edge in the triangulation
 						for(const auto &l : lines) {
 							window.draw(l.data(), 2, sf::Lines);
 						}
 						
+						// Display each edge and set delaunay flag to true
 						window.display();
 						delaunay = true;
 					
+					// M forms a minimal spanning tree from the delaunay graph if delaunay triangulation has already been ran
 					}else if(event.key.code == sf::Keyboard::M && generated && delaunay && !minimal){
 						cout << "Forming minimal spanning tree" << endl;
 						minimal = true;
+
+					// All other key presses are not recognized
 					}else{
 						cout << "Key press not recognized" << endl;
 					}
 
 					break;
-
+					
+				// Trigges when the window is resized and prints out message if debug mode is on
 				case sf::Event::Resized:
-					cout << "new width: " << event.size.width << endl;
-					cout << "new height: " << event.size.height << endl;
+					if(DEBUG){
+						cout << "new width: " << event.size.width << endl;
+						cout << "new height: " << event.size.height << endl;
+					}
+					
 					break;
 
 				default:
