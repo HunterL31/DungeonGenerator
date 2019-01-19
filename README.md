@@ -4,6 +4,9 @@ My take on a random dungeon generator
 Run: `sudo apt-get install libsfml-dev`
 followed by `make`
 
+Dungeon generation pseudo code has been lifted from the following reddit post but all implementation was of my own doing:
+https://www.reddit.com/r/gamedev/comments/1dlwc4/procedural_dungeon_generation_algorithm_explained/
+
 The Delaunay triangulation library I use here is developed by the Github user Bl4ckb0ne and the open source liscence is as follows:
 
 Copyright (c) 2015 Simon Zeni (simonzeni@gmail.com)
