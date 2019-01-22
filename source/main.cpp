@@ -6,15 +6,19 @@
 #include <math.h>
 #include <SFML/OpenGL.hpp>
 #include <random>
+#include <chrono>
 
 //	Delaunay library includes 
 #include "../delaunay/vector2.h"
 #include "../delaunay/triangle.h"
 #include "../delaunay/delaunay.h"
 
-#define ROOMNUM 	300
-#define RADIUS 		25
-#define FLOORS 		2
+// MST library includes
+#include "../mst/mst.h"
+
+#define ROOMNUM 	150
+#define RADIUS 		15
+#define FLOORS 		1
 #define QUICK 		0
 #define DOF			4.5
 #define DUNGSCALE	3
@@ -25,10 +29,17 @@ using namespace std;
 int randRange(int low, int high) { return rand() % high + low; }
 
 void generateRooms(room *rooms) {
+	typedef std::chrono::high_resolution_clock myclock;
+  	myclock::time_point beginning = myclock::now();
+
 	//	Random width and height according to a chi-squared random distribution
-	
 	default_random_engine generator;
 	chi_squared_distribution<double> distribution(DOF);	
+
+	// Seed the generator
+	myclock::duration d = myclock::now() - beginning;
+	generator.seed(d.count());
+	cout << "Your dungeons seed is " << d.count() << endl;
 
 	for (int i = 0; i < ROOMNUM; i++) {
 		double number = distribution(generator);
@@ -134,6 +145,9 @@ int main() {
 
 	//	Initialize Rooms array
 	room rooms[ROOMNUM];
+
+	// Minimal Spanning Tree object
+	Mst spanningTree;
 
 	//	Generate and draw initial cluster of rooms
 	generateRooms(rooms);
@@ -244,9 +258,17 @@ int main() {
 
 							// Number of Edges
 							std::cout << "Edges: " << edges.size() << std::endl;
-							for(const auto &e : edges)
-								std::cout << e << std::endl;
+							for(int i = 0; i < edges.size(); i++){
+								cout << edges[i] << endl;
+							}
 						}
+
+						// Send all edges to Minimal Spanning Tree Object
+						for(int i = 0; i < edges.size(); i++)
+							spanningTree.addEdge(edges[i]);
+						
+						if(DEBUG)
+							spanningTree.checkVal();
 						
 						//	Create vector to hold edge shapes so that SFML can display them 
 						std::vector<sf::RectangleShape*> edgeShapes;
@@ -277,18 +299,36 @@ int main() {
 						window.display();
 						delaunay = true;
 					
-					// M forms a minimal spanning tree from the delaunay graph if delaunay triangulation has already been ran
+					// M forms a minimal spanning tree from the delaunay graph if delaunay triangulation has been ran on the current map
 					}else if(event.key.code == sf::Keyboard::M && generated && delaunay && !minimal){
 						cout << "Forming minimal spanning tree" << endl;
-						minimal = true;
 
+						spanningTree.sort();
+
+						//	Create vector to hold edge shapes so that SFML can display them 
+						std::vector<sf::RectangleShape*> edgeShapes;
+						//for(int i = 0; i < countBig(rooms); i++){
+							//sf::RectangleShape *c1 = new sf::RectangleShape(sf::Vector2f(4, 4));
+							//c1->setPosition(p.x, p.y);
+							//c1->setFillColor(sf::Color::Red);
+							//edgeShapes.push_back(c1);
+						//}
+
+						window.clear();
+						for (int i = 0; i <= ROOMNUM; i++) { 
+							window.draw(rooms[i].getBox()); 
+						}
+						// Draw MST edges
+						window.display();
+
+						minimal = true;
 					// All other key presses are not recognized
 					}else{
 						cout << "Key press not recognized" << endl;
 					}
 
 					break;
-					
+
 				// Trigges when the window is resized and prints out message if debug mode is on
 				case sf::Event::Resized:
 					if(DEBUG){

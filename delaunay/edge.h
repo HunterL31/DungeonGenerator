@@ -38,5 +38,6 @@ inline bool almost_equal (const Edge<T> & e1, const Edge<T> & e2)
 			(almost_equal(e1.p1, e2.p2) && almost_equal(e1.p2, e2.p1));
 }
 
+
 #endif
 
