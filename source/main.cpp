@@ -310,7 +310,21 @@ int main() {
 						for(int i = 0; i < ROOMNUM; i++)
 							window.draw(rooms[i].getBox());
 
-						//std::vector<sf::RectangleShape*> edgeShapes;
+						vector<Edge<float> > mstEdges = spanningTree.getMST();
+						std::vector<sf::Vertex > lines;
+
+						for(int i = 0; i < mstEdges.size(); i++){
+							if(DEBUG)
+								std::cout << mstEdges[i] << std::endl;
+							lines.push_back(sf::Vertex(
+								sf::Vertex(sf::Vector2f(mstEdges[i].p1.x + 2, mstEdges[i].p1.y + 2))
+							));
+							lines.push_back(sf::Vertex(
+								sf::Vertex(sf::Vector2f(mstEdges[i].p2.x + 2, mstEdges[i].p2.y + 2))
+							));
+						}
+							window.draw(&lines[0], lines.size(), sf::Lines);
+						
 
 						window.display();
 						// Draw MST

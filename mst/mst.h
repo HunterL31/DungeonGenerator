@@ -23,6 +23,7 @@ class Mst
         void addEdge(Edge<float> e);
         void sort();
         void checkVal();
+        vector<Edge<float> > getMST();
     private:
         using VertexType = Vector2<float>;
 
@@ -47,6 +48,8 @@ class Mst
 Mst::Mst() {}
 
 void Mst::checkVal() { std::cout << "\nMST: " << edges.size() << " weight/edge pairs\nMST:" << points.size() << " points" << std::endl; }
+
+vector<Edge<float> > Mst::getMST() { return mstEdges; }
 
 void Mst::addEdge(Edge<float> e)
 {
