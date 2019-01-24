@@ -22,7 +22,7 @@
 #define QUICK 		0
 #define DOF			4.5
 #define DUNGSCALE	3
-#define DEBUG		0
+#define DEBUG		1
 
 using namespace std;
 
@@ -305,21 +305,15 @@ int main() {
 
 						spanningTree.sort();
 
-						//	Create vector to hold edge shapes so that SFML can display them 
-						std::vector<sf::RectangleShape*> edgeShapes;
-						//for(int i = 0; i < countBig(rooms); i++){
-							//sf::RectangleShape *c1 = new sf::RectangleShape(sf::Vector2f(4, 4));
-							//c1->setPosition(p.x, p.y);
-							//c1->setFillColor(sf::Color::Red);
-							//edgeShapes.push_back(c1);
-						//}
-
 						window.clear();
-						for (int i = 0; i <= ROOMNUM; i++) { 
-							window.draw(rooms[i].getBox()); 
-						}
-						// Draw MST edges
+
+						for(int i = 0; i < ROOMNUM; i++)
+							window.draw(rooms[i].getBox());
+
+						//std::vector<sf::RectangleShape*> edgeShapes;
+
 						window.display();
+						// Draw MST
 
 						minimal = true;
 					// All other key presses are not recognized

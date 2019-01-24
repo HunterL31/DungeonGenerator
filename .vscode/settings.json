@@ -35,6 +35,9 @@
         "typeinfo": "cpp",
         "utility": "cpp",
         "chrono": "cpp",
-        "ratio": "cpp"
+        "ratio": "cpp",
+        "hash_map": "cpp",
+        "cstdarg": "cpp",
+        "list": "cpp"
     }
 }
