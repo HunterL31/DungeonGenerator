@@ -19,10 +19,10 @@
 #define ROOMNUM 	300
 #define RADIUS 		5
 #define FLOORS 		1
-#define DOF			5
-#define DUNGSCALE	3.5
+#define DOF			5.5
+#define DUNGSCALE	4
 #define DEBUG		0
-#define SEED		1
+#define SEED		0
 
 int randRange(int low, int high) { return rand() % high + low; }
 
