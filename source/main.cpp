@@ -16,13 +16,14 @@
 // MST library includes
 #include "../mst/mst.h"
 
-#define ROOMNUM 	150
+#define ROOMNUM 	500
 #define RADIUS 		5
 #define FLOORS 		1
 #define QUICK 		0
-#define DOF			4.5
+#define DOF			5
 #define DUNGSCALE	3.5
 #define DEBUG		0
+#define SEED		0
 
 int randRange(int low, int high) { return rand() % high + low; }
 
@@ -36,8 +37,15 @@ void generateRooms(room *rooms) {
 
 	// Seed the generator
 	myclock::duration d = myclock::now() - beginning;
-	generator.seed(d.count());
-	cout << "Your dungeons seed is " << d.count() << endl;
+	if(SEED){
+		generator.seed(SEED);
+		cout << "Using preset dungeon seed " << SEED << endl;
+	}else{
+		generator.seed(d.count());
+		cout << "Your random dungeon seed is " << d.count() << endl;
+	}
+	
+	
 
 	for (int i = 0; i < ROOMNUM; i++) {
 		double number = distribution(generator);
@@ -64,13 +72,13 @@ void generateRooms(room *rooms) {
 	*/
 	//int small = 0, med = 0, large = 0;
 	for (int i = 0; i < ROOMNUM; i++) {
-		if (rooms[i].getW()*rooms[i].getH() <= 200) { 
+		if (rooms[i].getW()*rooms[i].getH() <= pow(5 * DUNGSCALE, 2)) { 
 			rooms[i].setColor(1); 
 			//small++;
-		} else if (rooms[i].getW()*rooms[i].getH() <= 500 && (rooms[i].getW()*rooms[i].getH() > 200)) { 
+		} else if (rooms[i].getW()*rooms[i].getH() <= pow(8 * DUNGSCALE, 2) && (rooms[i].getW()*rooms[i].getH() > pow(5 * DUNGSCALE, 2))) { 
 			rooms[i].setColor(2); 
 			//med++;
-		} else if ((rooms[i].getW()*rooms[i].getH() > 500)) { 
+		} else if ((rooms[i].getW()*rooms[i].getH() > pow(8 * DUNGSCALE, 2))) { 
 			rooms[i].setColor(3); 
 			//large++;
 		}
@@ -303,7 +311,7 @@ int main() {
 					
 					// M forms a minimal spanning tree from the delaunay graph if delaunay triangulation has been ran on the current map
 					}else if(event.key.code == sf::Keyboard::M && generated && delaunay && !minimal){
-						cout << "Forming minimal spanning tree" << endl;
+						cout << "Forming minimum spanning tree" << endl;
 
 						Mst spanningTree;
 
@@ -341,7 +349,7 @@ int main() {
 						minimal = true;
 						spanningEdges.clear();
 						spanningEdges = spanningTree.getMST();
-						std::cout << "  Minimal spanning tree completed" << std::endl;
+						cout << "	Minimum spanning tree completed" << endl;
 					
 					}else if(event.key.code == sf::Keyboard::H && generated && delaunay && minimal){
 						std::cout << "Drawing hallways" << std::endl;
