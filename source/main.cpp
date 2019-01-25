@@ -16,14 +16,13 @@
 // MST library includes
 #include "../mst/mst.h"
 
-#define ROOMNUM 	500
+#define ROOMNUM 	300
 #define RADIUS 		5
 #define FLOORS 		1
-#define QUICK 		0
 #define DOF			5
 #define DUNGSCALE	3.5
 #define DEBUG		0
-#define SEED		0
+#define SEED		1
 
 int randRange(int low, int high) { return rand() % high + low; }
 
@@ -191,19 +190,13 @@ int main() {
 
 						for (int i = 0; i < ROOMNUM; i++){
 							overlap(rooms, i);
-							if(!QUICK){
-								window.clear();
-								for (int j = 0; j <= i; j++) { 
-									window.draw(rooms[j].getBox()); 
-								}
-								window.display();
-							}else if(QUICK){
-								for (int j = 0; j <= i; j++) { 
-									window.draw(rooms[j].getBox()); 
-								}
+							window.clear();
+							for (int j = 0; j <= i; j++) { 
+								window.draw(rooms[j].getBox()); 
 							}
+							window.display();
 						}
-						window.display();
+						
 						cout << "	map generated" << endl; 
 						generated = true;
 
@@ -214,22 +207,16 @@ int main() {
 						minimal = false;
 						
 						generateRooms(rooms);
-						window.clear();
+						
 						for (int i = 0; i < ROOMNUM; i++){
 							overlap(rooms, i);
-							if(!QUICK){
-								window.clear();
-								for (int j = 0; j <= i; j++) { 
-									window.draw(rooms[j].getBox()); 
-								}
-								window.display();
-							}else if(QUICK){
-								for (int j = 0; j <= i; j++) { 
-									window.draw(rooms[j].getBox()); 
-								}
+							window.clear();
+							for (int j = 0; j <= i; j++) { 
+								window.draw(rooms[j].getBox()); 
 							}
+							window.display();
 						}
-						window.display();
+						
 						spanningEdges.clear();
 						hallways.clear();
 						cout << "	map generated" << endl;
