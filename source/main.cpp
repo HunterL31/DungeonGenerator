@@ -16,13 +16,85 @@
 // MST library includes
 #include "../mst/mst.h"
 
-#define ROOMNUM 	150
+#define ROOMNUM 	300
 #define RADIUS 		15
 #define FLOORS 		1
-#define DOF			5
+#define DOF			4.5
 #define DUNGSCALE	4
 #define DEBUG		0
 #define SEED		0
+
+int  randRange(int low, int high);
+int  getSeed();
+int  calcColor(float a);
+void generateRooms(room *rooms);
+void overlap(room *rooms, int current);
+int  countBig(room *rooms);
+void getRoomCenter(room *rooms, vector<Vector2<float> > &points);
+void drawRooms(sf::RenderWindow &window, room *rooms);
+void drawHallways(sf::RenderWindow &window, vector<room> hallways);
+void initialDraw(sf::RenderWindow &window, room *rooms);
+void buttonQ(sf::RenderWindow &window);
+void buttonG(sf::RenderWindow &window, room *rooms);
+void buttonG2(sf::RenderWindow &window, room *rooms);
+void buttonD(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges);
+void buttonM(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges);
+void buttonH(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges, std::vector<room> &hallways);
+void handleInput(bool *flags, sf::Event event, sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges, std::vector<room> &hallways);
+
+int main()
+{
+	sf::RenderWindow window(sf::VideoMode(800, 800), "Dungeon Generator");
+	//	Event flags
+	bool flags[] = {false, false, false, false};
+
+	//	Initialize Rooms array
+	room rooms[ROOMNUM];
+
+	// Vector to hold the edges used to create the minimum spanning tree
+	std::vector<Edge<float> > spanningEdges;
+
+	// Vector to hold hallways and final rooms
+	std::vector<room> hallways;
+
+	//	Generate and draw initial cluster of rooms
+	initialDraw(window, rooms);
+
+	// Window loop that runs while the window is open
+	while (window.isOpen()) {
+		sf::Event event;
+
+		// Event loop
+		while (window.pollEvent(event)){
+			switch (event.type){
+				
+				// Triggers when the window is closed
+				case sf::Event::Closed:
+					window.close();
+					break;
+
+				// Triggers when a key is pressed
+				case sf::Event::KeyPressed:
+					handleInput(flags, event, window, rooms, spanningEdges, hallways);
+					break;
+
+				// Trigges when the window is resized
+				case sf::Event::Resized:
+				 	// Prints out message if debug mode is on
+					if(DEBUG){
+						cout << "new width: " << event.size.width << endl;
+						cout << "new height: " << event.size.height << endl;
+					}
+					
+					break;
+
+				default:
+					break;
+			}
+		}
+	}
+	return 0;
+}
 
 int randRange(int low, int high) { return rand() % high + low; }
 
@@ -398,60 +470,4 @@ void handleInput(bool *flags, sf::Event event, sf::RenderWindow &window, room *r
 	}else{
 		cout << "Key press not recognized" << endl;
 	}
-}
-
-int main()
-{
-	sf::RenderWindow window(sf::VideoMode(800, 800), "Dungeon Generator");
-	window.setFramerateLimit(120);
-
-	//	Event flags
-	//generated, delaunay, minimal, hallways
-	bool flags[] = {false, false, false, false};
-
-	//	Initialize Rooms array
-	room rooms[ROOMNUM];
-
-	// Vector to hold hallways and final rooms
-	std::vector<room> hallways;
-	
-	// Vector to hold the edges used to create the minimum spanning tree
-	std::vector<Edge<float> > spanningEdges;
-
-	//	Generate and draw initial cluster of rooms
-	initialDraw(window, rooms);
-
-	// Window loop that runs while the window is open
-	while (window.isOpen()) {
-		sf::Event event;
-
-		// Event loop that watches for key presses
-		while (window.pollEvent(event)){
-			switch (event.type){
-				
-				// Triggers when the window is closed
-				case sf::Event::Closed:
-					window.close();
-					break;
-
-				// Case for when a key is pressed
-				case sf::Event::KeyPressed:
-					handleInput(flags, event, window, rooms, spanningEdges, hallways);
-					break;
-
-				// Trigges when the window is resized and prints out message if debug mode is on
-				case sf::Event::Resized:
-					if(DEBUG){
-						cout << "new width: " << event.size.width << endl;
-						cout << "new height: " << event.size.height << endl;
-					}
-					
-					break;
-
-				default:
-					break;
-			}
-		}
-	}
-	return 0;
 }
