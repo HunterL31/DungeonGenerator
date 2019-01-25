@@ -11,15 +11,20 @@ H - Will create hallways connecting rooms according to the minimum spanning tree
 
 To change parameters such as room count, dungeon scale, degrees of freedom for the room generation or to activate debug mode simply adjust the #defines at the top of main.cpp and recompile the project. 
 
-# DEBUG
-Setting it to 0 will turn off debug messages while 1 turns it on
+# ROOMNUM
+Determines the total number of rooms initially generated
+# RADIUS
+Determines the size of the circle the rooms are initially placed in
 # DOF
 Refers to the k value used in the chi-squared dstribution which is how the program generates the dimensions of its rooms (more information on chi-squared sitribution can be found here https://en.wikipedia.org/wiki/Chi-squared_distribution)
 # DUNGSCALE
 The multiplier used to make the rooms bigger since the chi-squared distribution only provides a float between 0-10
-# RADIUS determines the size of the circle the rooms are initially placed in
-# SEED allows you to manually set the seed for the dungeon, setting it to 0 allows the program to choose it randomly.
+# DEBUG
+Setting it to 0 will turn off debug messages while 1 turns it on
+# SEED
+Allows you to manually set the seed for the dungeon, setting it to 0 allows the program to choose it randomly.
 
+# Sources
 Dungeon generation pseudo code has been lifted from the following reddit post but all implementation is my own:
 https://www.reddit.com/r/gamedev/comments/1dlwc4/procedural_dungeon_generation_algorithm_explained/
 
