@@ -9,6 +9,7 @@
 #include <stdlib.h>     // srand, rand 
 #include <time.h>		//time function
 #include <math.h>
+#include <random>
 #include "../delaunay/edge.h"
 
 // Shortcut for an integer pair 
@@ -20,6 +21,7 @@ class Mst
 {
     public:
         Mst();
+        void cleartree();
         void addEdge(Edge<float> e);
         void sort();
         void checkVal();
@@ -46,6 +48,14 @@ class Mst
 };
 
 Mst::Mst() {}
+
+void Mst::cleartree()
+{
+    points.clear();
+    edges.clear();
+    mstPoints.clear();
+    mstEdges.clear();
+}
 
 void Mst::checkVal() { std::cout << "\nMST: " << edges.size() << " weight/edge pairs\nMST:" << points.size() << " points" << std::endl; }
 
@@ -111,10 +121,13 @@ bool Mst::checkEdge(Edge<float> e)
 *   1) For every adjacent vertext v
 *   2) If weight of edge u-v is less than the previous key value of point v, update the key value as the weight of edge u-v
 *  4) Include edge u-v in the mstEdge vector
+* 4) Add in a few more edges to make for an interesting layout
 */
 
 void Mst::sort()
 {
+    srand(time(NULL));
+
     // Push the first point into the MST set and set its key value to 0
     points[0].second = 0;
     mstPoints.push_back(points[0].first);
@@ -156,6 +169,17 @@ void Mst::sort()
         
         //std::cout << "Added point " << mstPoints.size() << " to MST" << std::endl;
     }
+
+    int addBack = edges.size() * .15;
+
+    for(int i = 0; i < addBack; i++){
+        int edgeNum = rand() % edges.size();
+        if(!checkEdge(edges[edgeNum].second))
+            mstEdges.push_back(edges[edgeNum].second);
+        else
+            i -= 1;
+    }
+
     std::cout << "  Minimal spanning tree completed" << std::endl;
     return;
 }

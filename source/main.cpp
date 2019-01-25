@@ -16,13 +16,13 @@
 // MST library includes
 #include "../mst/mst.h"
 
-#define ROOMNUM 	150
+#define ROOMNUM 	300
 #define RADIUS 		15
 #define FLOORS 		1
 #define QUICK 		0
 #define DOF			4.5
 #define DUNGSCALE	3
-#define DEBUG		1
+#define DEBUG		0
 
 using namespace std;
 
@@ -147,7 +147,8 @@ int main() {
 	room rooms[ROOMNUM];
 
 	// Minimal Spanning Tree object
-	Mst spanningTree;
+	//Mst spanningTree;
+	std::vector<Edge<float> > spanningEdges;
 
 	//	Generate and draw initial cluster of rooms
 	generateRooms(rooms);
@@ -179,7 +180,6 @@ int main() {
 
 					// G generates and distributes the rooms 
 					} else if(event.key.code == sf::Keyboard::G && !generated){
-						generated = true;
 						cout << "Generating map..." << endl;
 
 						for (int i = 0; i < ROOMNUM; i++){
@@ -198,12 +198,14 @@ int main() {
 						}
 						window.display();
 						cout << "	map generated" << endl; 
+						generated = true;
 
 					// If the rooms have already been distributed, G will remake them and redistribute them
 					} else if(event.key.code == sf::Keyboard::G && generated){
 						cout << "Regenerating map..." << endl;
 						delaunay = false;
 						minimal = false;
+						
 						generateRooms(rooms);
 						window.clear();
 						for (int i = 0; i < ROOMNUM; i++){
@@ -265,10 +267,10 @@ int main() {
 
 						// Send all edges to Minimal Spanning Tree Object
 						for(int i = 0; i < edges.size(); i++)
-							spanningTree.addEdge(edges[i]);
+							spanningEdges.push_back(edges[i]);
+							//spanningTree.addEdge(edges[i]);
 						
-						if(DEBUG)
-							spanningTree.checkVal();
+						
 						
 						//	Create vector to hold edge shapes so that SFML can display them 
 						std::vector<sf::RectangleShape*> edgeShapes;
@@ -303,6 +305,14 @@ int main() {
 					}else if(event.key.code == sf::Keyboard::M && generated && delaunay && !minimal){
 						cout << "Forming minimal spanning tree" << endl;
 
+						Mst spanningTree;
+
+						for(int i = 0; i < spanningEdges.size(); i++)
+							spanningTree.addEdge(spanningEdges[i]);
+
+						if(DEBUG)
+							spanningTree.checkVal();
+
 						spanningTree.sort();
 
 						window.clear();
@@ -327,9 +337,9 @@ int main() {
 						
 
 						window.display();
-						// Draw MST
 
 						minimal = true;
+						spanningEdges.clear();
 					// All other key presses are not recognized
 					}else{
 						cout << "Key press not recognized" << endl;
