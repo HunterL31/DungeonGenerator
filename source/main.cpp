@@ -16,6 +16,7 @@
 // MST library includes
 #include "../mst/mst.h"
 
+// Parameters for dungeon creation
 #define ROOMNUM 	300
 #define RADIUS 		15
 #define FLOORS 		1
@@ -24,6 +25,7 @@
 #define DEBUG		0
 #define SEED		0
 
+// Function headers
 int  randRange(int low, int high);
 int  getSeed();
 int  calcColor(float a);
@@ -40,6 +42,7 @@ void buttonG2(sf::RenderWindow &window, room *rooms);
 void buttonD(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges);
 void buttonM(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges);
 void buttonH(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges, std::vector<room> &hallways);
+void determineOrientation(room &horizontal, room &vertical, int x1, int y1, int x2, int y2);
 void handleInput(bool *flags, sf::Event event, sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges, std::vector<room> &hallways);
 
 int main()
@@ -339,20 +342,25 @@ void buttonM(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &s
 {
 	cout << "Forming minimum spanning tree" << endl;
 
+	// Minimum spanning tree object
 	Mst spanningTree;
 
+	// Add all edges from Delaunay to the MST
 	for(int i = 0; i < spanningEdges.size(); i++)
 		spanningTree.addEdge(spanningEdges[i]);
 
+	// Debug message to verify values
 	if(DEBUG)
 		spanningTree.checkVal();
 
+	// Run minimum spanning tree algorithm
 	spanningTree.sort();
 
 	window.clear();
 
 	drawRooms(window, rooms);
 
+	// Create sfml lines from the MST edges and draw them to the screen
 	vector<Edge<float> > mstEdges = spanningTree.getMST();
 	std::vector<sf::Vertex > lines;
 
@@ -380,45 +388,20 @@ void buttonH(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &s
 {
 	std::cout << "Drawing hallways" << std::endl;
 
+	// For each edge in the MST draw a vertical and horizontal hallway to connect each point
 	for(int i = 0; i < spanningEdges.size(); i++){
-		int x1 = spanningEdges[i].p1.x, y1 = spanningEdges[i].p1.y;
-		int x2 = spanningEdges[i].p2.x, y2 = spanningEdges[i].p2.y;
 		room horizontal, vertical;
 
 		horizontal.setColor(1);
 		vertical.setColor(1);
 
-		if(DEBUG)
-			std::cout << "	Hallway from (" << x1 << ", " << y1 << ") to (" << x2 << ", " << y2 << ")" << endl;
-
-		if(x1 < x2){
-			horizontal.setDim(x2 - x1, 3);
-			horizontal.setOrigin(x1, y1 - 1);
-			if(y1 < y2){
-				vertical.setDim(3, y2 - y1);
-				vertical.setOrigin(x2 - 1, y1);
-			}else{
-				vertical.setDim(3, y1 - y2);
-				vertical.setOrigin(x2 - 1, y2);
-			}
-			
-		}else{
-			horizontal.setDim(x1 - x2, 3);
-			horizontal.setOrigin(x2, y1 - 1);
-			if(y1 < y2){
-				vertical.setDim(3, y2 - y1);
-				vertical.setOrigin(x2 - 1, y1);
-			}else{
-				vertical.setDim(3, y1 - y2);
-				vertical.setOrigin(x2 - 1, y2);
-			}
-		}
+		determineOrientation(horizontal, vertical, spanningEdges[i].p1.x, spanningEdges[i].p1.y, spanningEdges[i].p2.x, spanningEdges[i].p2.y);
 
 		hallways.push_back(horizontal);
 		hallways.push_back(vertical);
 	}
-	drawHallways(window, hallways);
-	std::cout << "	Hallways drawn" << std::endl;
+
+	// If any room is colliding with one of the hallways, add it to the hallway vector
 	for(int i = 0; i < ROOMNUM; i++){
 		for(int j = 0; j < hallways.size(); j++){
 			if(rooms[i].getBox().getGlobalBounds().intersects(hallways[j].getBox().getGlobalBounds())){
@@ -427,9 +410,48 @@ void buttonH(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &s
 			}
 		}
 	}
+
 	window.clear();
 	drawHallways(window, hallways);
-	window.display();	
+	window.display();
+
+	std::cout << "	Hallways drawn" << std::endl;	
+}
+
+void determineOrientation(room &horizontal, room &vertical, int x1, int y1, int x2, int y2)
+{
+	if(DEBUG)
+		std::cout << "	Hallway from (" << x1 << ", " << y1 << ") to (" << x2 << ", " << y2 << ")" << endl;
+
+	// 4 possible cases for the location of the points relative to eachother
+	// First point is to the left of the second point
+	if(x1 < x2){
+		horizontal.setDim(x2 - x1, 3);
+		horizontal.setOrigin(x1, y1 - 1);
+
+		// First point is above the second point
+		if(y1 < y2){
+			vertical.setDim(3, y2 - y1);
+			vertical.setOrigin(x2 - 1, y1);
+
+		// First point is below the second point
+		}else{
+			vertical.setDim(3, y1 - y2);
+			vertical.setOrigin(x2 - 1, y2);
+		}
+		
+	// First point is to the right of the second point
+	}else{
+		horizontal.setDim(x1 - x2, 3);
+		horizontal.setOrigin(x2, y1 - 1);
+		if(y1 < y2){
+			vertical.setDim(3, y2 - y1);
+			vertical.setOrigin(x2 - 1, y1);
+		}else{
+			vertical.setDim(3, y1 - y2);
+			vertical.setOrigin(x2 - 1, y2);
+		}
+	}
 }
 
 void handleInput(bool *flags, sf::Event event, sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &spanningEdges, std::vector<room> &hallways)
