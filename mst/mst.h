@@ -179,8 +179,6 @@ void Mst::sort()
         else
             i -= 1;
     }
-
-    std::cout << "  Minimal spanning tree completed" << std::endl;
     return;
 }
 

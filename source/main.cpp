@@ -16,15 +16,13 @@
 // MST library includes
 #include "../mst/mst.h"
 
-#define ROOMNUM 	300
-#define RADIUS 		15
+#define ROOMNUM 	150
+#define RADIUS 		5
 #define FLOORS 		1
 #define QUICK 		0
 #define DOF			4.5
-#define DUNGSCALE	3
+#define DUNGSCALE	3.5
 #define DEBUG		0
-
-using namespace std;
 
 int randRange(int low, int high) { return rand() % high + low; }
 
@@ -146,8 +144,9 @@ int main() {
 	//	Initialize Rooms array
 	room rooms[ROOMNUM];
 
-	// Minimal Spanning Tree object
-	//Mst spanningTree;
+	std::vector<room> hallways;
+	
+
 	std::vector<Edge<float> > spanningEdges;
 
 	//	Generate and draw initial cluster of rooms
@@ -223,6 +222,8 @@ int main() {
 							}
 						}
 						window.display();
+						spanningEdges.clear();
+						hallways.clear();
 						cout << "	map generated" << endl;
 
 					// D will perform Delaunay triangulation on the rooms if they have been previously distributed
@@ -268,7 +269,6 @@ int main() {
 						// Send all edges to Minimal Spanning Tree Object
 						for(int i = 0; i < edges.size(); i++)
 							spanningEdges.push_back(edges[i]);
-							//spanningTree.addEdge(edges[i]);
 						
 						
 						
@@ -340,6 +340,72 @@ int main() {
 
 						minimal = true;
 						spanningEdges.clear();
+						spanningEdges = spanningTree.getMST();
+						std::cout << "  Minimal spanning tree completed" << std::endl;
+					
+					}else if(event.key.code == sf::Keyboard::H && generated && delaunay && minimal){
+						std::cout << "Drawing hallways" << std::endl;
+
+						for(int i = 0; i < spanningEdges.size(); i++){
+							int x1 = spanningEdges[i].p1.x, y1 = spanningEdges[i].p1.y;
+							int x2 = spanningEdges[i].p2.x, y2 = spanningEdges[i].p2.y;
+							room horizontal, vertical;
+
+							horizontal.setColor(1);
+							vertical.setColor(1);
+
+							if(DEBUG)
+								std::cout << "	Hallway from (" << x1 << ", " << y1 << ") to (" << x2 << ", " << y2 << ")" << endl;
+
+							if(x1 < x2){
+								horizontal.setDim(x2 - x1, 3);
+								horizontal.setOrigin(x1, y1 - 1);
+								if(y1 < y2){
+									vertical.setDim(3, y2 - y1);
+									vertical.setOrigin(x2 - 1, y1);
+								}else{
+									vertical.setDim(3, y1 - y2);
+									vertical.setOrigin(x2 - 1, y2);
+								}
+								
+							}else{
+								horizontal.setDim(x1 - x2, 3);
+								horizontal.setOrigin(x2, y1 - 1);
+								if(y1 < y2){
+									vertical.setDim(3, y2 - y1);
+									vertical.setOrigin(x2 - 1, y1);
+								}else{
+									vertical.setDim(3, y1 - y2);
+									vertical.setOrigin(x2 - 1, y2);
+								}
+							}
+
+							hallways.push_back(horizontal);
+							hallways.push_back(vertical);
+
+							window.draw(horizontal.getBox());
+							window.draw(vertical.getBox());
+							window.display();
+						}
+						std::cout << "	Hallways drawn" << std::endl;
+						for(int i = 0; i < ROOMNUM; i++){
+							for(int j = 0; j < hallways.size(); j++){
+								if(rooms[i].getBox().getGlobalBounds().intersects(hallways[j].getBox().getGlobalBounds())){
+									//rooms[i].setOrigin(0, 0);
+									//rooms[i].setDim(0, 0);
+									//std::cout << "Room " << i << " does not collide with a hallway" << std::endl;
+									hallways.push_back(rooms[i]);
+									break;
+								}
+							}
+						}
+						window.clear();
+						//for(int i = 0; i < ROOMNUM; i++)
+							//window.draw(rooms[i].getBox());
+						for(int i = 0; i < hallways.size(); i++)
+							window.draw(hallways[i].getBox());
+						window.display();
+						//rooms[current].getBox().getGlobalBounds().intersects(rooms[i].getBox().getGlobalBounds()) && current != i 
 					// All other key presses are not recognized
 					}else{
 						cout << "Key press not recognized" << endl;
