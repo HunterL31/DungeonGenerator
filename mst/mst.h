@@ -87,9 +87,9 @@ void Mst::addEdge(Edge<float> e)
                 p2Dupe = true;
         }
         if(!p1Dupe)
-            points.push_back(std::make_pair(e.p1, __INT_MAX__));
+            points.push_back(std::make_pair(e.p1, INT_MAX));
         if(!p2Dupe)
-            points.push_back(std::make_pair(e.p2, __INT_MAX__));
+            points.push_back(std::make_pair(e.p2, INT_MAX));
     }
 }
 

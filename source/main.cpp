@@ -5,6 +5,8 @@
 #include <time.h>		//time function
 #include <math.h>
 #include <SFML/OpenGL.hpp>
+#include <SFML/Window.hpp>
+#include <SFML/System.hpp>
 #include <random>
 #include <chrono>
 
@@ -319,20 +321,23 @@ void buttonD(sf::RenderWindow &window, room *rooms, std::vector<Edge<float> > &s
 		c1->setFillColor(sf::Color::Red);
 		edgeShapes.push_back(c1);
 	}
-
+	
 	// Add in the opposite corners to form rectangles
-	std::vector<std::array<sf::Vertex, 2> > lines;
-	for(const auto &e : edges) {
-		lines.push_back({{
-			sf::Vertex(sf::Vector2f(e.p1.x + 2, e.p1.y + 2)),
-			sf::Vertex(sf::Vector2f(e.p2.x + 2, e.p2.y + 2))
-		}});
+	std::vector<sf::Vertex > lines;
+	for (int i = 0; i < edges.size(); i++) {
+
+		lines.push_back(sf::Vertex(
+			sf::Vertex(sf::Vector2f(edges[i].p1.x + 2, edges[i].p1.y + 2))
+		));
+		lines.push_back(sf::Vertex(
+			sf::Vertex(sf::Vector2f(edges[i].p2.x + 2, edges[i].p2.y + 2))
+		));
 	}
 	
 	// Draw each edge in the triangulation
-	for(const auto &l : lines) {
-		window.draw(l.data(), 2, sf::Lines);
-	}
+	window.draw(&lines[0], lines.size(), sf::Lines);
+
+	
 
 	// Display each edge and set delaunay flag to true
 	window.display();
