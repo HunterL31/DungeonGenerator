@@ -3,6 +3,7 @@ My take on a random dungeon generator
 
 Run: `sudo apt-get install libsfml-dev`
 followed by `make`
+Alternatively download the release for your system
 Commands: 
 G - Generate a new dungeon. Will clear any Delaunay or MST present
 D - Will perform Delaunay Triangulation assuming a dungeon has been generated
