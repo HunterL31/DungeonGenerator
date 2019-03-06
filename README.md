@@ -1,14 +1,14 @@
 # DungeonGenerator
 My take on a random dungeon generator
 
-Run: `sudo apt-get install libsfml-dev`
-followed by `make`
-Alternatively download the release for your system
-Commands: 
-G - Generate a new dungeon. Will clear any Delaunay or MST present
-D - Will perform Delaunay Triangulation assuming a dungeon has been generated
-M - Will create a Minimum Spanning Tree assuming the Delaunay triangulation has been performed
-H - Will create hallways connecting rooms according to the minimum spanning tree
+Run: `sudo apt-get install libsfml-dev`\
+followed by `make`\
+Alternatively download the release for your system\
+Commands: \
+G - Generate a new dungeon. Will clear any Delaunay or MST present\
+D - Will perform Delaunay Triangulation assuming a dungeon has been generated\
+M - Will create a Minimum Spanning Tree assuming the Delaunay triangulation has been performed\
+H - Will create hallways connecting rooms according to the minimum spanning tree\
 
 To change parameters such as room count, dungeon scale, degrees of freedom for the room generation or to activate debug mode simply adjust the #defines at the top of main.cpp and recompile the project. 
 
